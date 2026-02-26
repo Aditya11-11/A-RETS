@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from physics.breit_wigner import breit_wigner_cross_section
 from physics.reaction_rate import calculate_reaction_rate
+from physics.qvalue import compute_q_value, get_threshold_energy
 
 st.set_page_config(page_title="A-RETS Dashboard", layout="wide")
 
@@ -29,6 +30,14 @@ with col1:
     mag_field = st.slider("Magnetic Field (T)", 0.1, 10.0, 5.0, 0.1)
     target_thickness = st.slider("Target Thickness (cm)", 0.01, 1.0, 0.1, 0.01)
     temperature = st.slider("Plasma Temp (keV)", 0.1, 10.0, 1.0, 0.1)
+
+    st.subheader("☢️ Q-Value Calculator")
+    m_p = st.number_input("Parent Mass (amu)", value=195.9658, format="%.4f")
+    m_d = st.number_input("Daughter Mass (amu)", value=194.9659, format="%.4f")
+    m_e = st.number_input("Emitted Mass (amu)", value=1.0087, format="%.4f")
+    
+    q_val = compute_q_value(m_p, m_d, m_e)
+    e_th = get_threshold_energy(q_val, m_p)
 
 with col2:
     st.header("📊 Physics Visualization")
@@ -60,6 +69,12 @@ with col2:
                                    E_res, Gamma, sigma_peak, electron_density)
     
     st.metric("Predicted Reaction Rate", f"{rate:.4e} rx/cm³/s")
+    
+    col_q1, col_q2 = st.columns(2)
+    with col_q1:
+        st.metric("Q-Value", f"{q_val:.4f} MeV")
+    with col_q2:
+        st.metric("Threshold Energy", f"{e_th:.4f} MeV")
     
     # Placeholder for RL Confinement Area
     st.subheader("🤖 Plasma Confinement (RL Agent)")
